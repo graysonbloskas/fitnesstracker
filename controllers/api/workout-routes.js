@@ -2,72 +2,71 @@ const router = require('express').Router();
 const { Workout } = require('../../models');
 
 // Create workout routine
-router.post('/workouts', async (req, data) => {
+router.post('/workouts', async (req, res) => {
     try {
         const workoutData = await Workout.create({});
-        data.status(200).json(workoutData);
+        res.status(200).json(workoutData);
     } catch (err) {
-        data.status(500).json(err);
+        res.status(500).json(err);
     }
 });
 
-// update workout with specific id
-router.put('workouts/:id', async (req, data) => {
+
+router.put('/workouts/:id', async (req, res) => {
     try {
         const workoutData = await Workout.findByIdAndUpdate(
             req.params.id, 
             { $push: { exercises: req.body }},
             { new: true }
         );
-        data.status(200).json(workoutData);
+        res.status(200).json(workoutData);
     } catch (err) {
-        data.status(500).json(err);
+        res.status(500).json(err);
     }
 });
 
-router.get('/workouts', async (req, data) => {
+router.get('/workouts', async (req, res) => {
     try {
         const workoutData = await Workout.aggregate([
             {
                 $addFields: {
-                    $totalDuration: {
-                        $sum: '$exercise.duration',
+                    totalDuration: {
+                        $sum: '$exercises.duration',
                     },
                 },
             },
         ])
-        data.status(200).json(workoutData);
+        res.status(200).json(workoutData);
     } catch (err) {
-        data.status(500).json(err);
+        res.status(500).json(err);
     }
 });
 
 // get workout by range
-router.get('/workouts/range', async (req, data) => {
+router.get('/workouts/range', async (req, res) => {
     try {
         const workoutData = await Workout.aggregate([
             {
                 $addFields: {
-                    $totalDuration: {
-                        $sum: 'exercises.duration',
+                    totalDuration: {
+                        $sum: '$exercises.duration',
                     },
                 },
             },
-        ])
-        .sort({_id: -1}).limit(7);
-        data.status(200).json(workoutData);
+        ]).sort({_id: -1}).limit(7);
+        res.status(200).json(workoutData);
     } catch (err) {
-        data.status(500).json(500);
+        res.status(500).json(500);
     }
 });
 
 // delete workout by ID
-router.delete('/workouts', async (req, data) => {
+router.delete('/workouts', async (req, res) => {
     try {
         const workoutData = await Workout.findByIdAndDelete(req.body);
-        data.status(200).json(true);
+        res.status(200).json(true);
     } catch (err) {
-        data.status(500).json(err)
+        res.status(500).json(err)
     }
 });
 
